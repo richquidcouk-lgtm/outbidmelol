@@ -17,7 +17,7 @@ export function CategoryPills({
   const activeOutsideQuick = !activeIsQuick ? getCategory(query.category!) : null;
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto px-4 py-3 text-sm">
+    <div className="flex items-center gap-2 overflow-x-auto py-1 text-sm">
       <PillLink
         href={buildBoardHref("/", query, { category: null })}
         active={query.category === null}

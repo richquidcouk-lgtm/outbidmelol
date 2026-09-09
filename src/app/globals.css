@@ -1,38 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --board: #e9ecef;
+  --board: #f3f4fa;
   --plate: #ffffff;
-  --ink: #12161c;
-  --muted: #5a626c;
-  --rule: #c9cfd6;
-  --gain: #0b7a3b;
-  --cut: #d93a1e;
-  --gold: #e8b417;
+  --surface-2: #ececf6;
+  --ink: #10131a;
+  --muted: #666f80;
+  --rule: #e1e3ee;
+  --gain: #0e8a45;
+  --cut: #d81e4f;
+  --gold: #b9860a;
+  --accent: #6d4aff;
+  --accent-2: #22c55e;
+  --glow-money: rgba(14, 138, 69, 0.22);
+  --glow-accent: rgba(109, 74, 255, 0.22);
+  --shadow-color: rgba(20, 20, 45, 0.09);
+  --shadow-color-lg: rgba(20, 20, 45, 0.14);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --board: #0e1116;
-    --plate: #171b22;
-    --ink: #e9ecef;
-    --muted: #98a1ac;
-    --rule: #2b323b;
-    --gain: #35b06a;
-    --cut: #f2603f;
-    --gold: #f0c43a;
+    --board: #06070c;
+    --plate: #12151f;
+    --surface-2: #191d2a;
+    --ink: #f3f5fa;
+    --muted: #97a0b3;
+    --rule: rgba(255, 255, 255, 0.09);
+    --gain: #2fe17e;
+    --cut: #ff5075;
+    --gold: #ffd166;
+    --accent: #9c8bff;
+    --accent-2: #34eb92;
+    --glow-money: rgba(47, 225, 126, 0.35);
+    --glow-accent: rgba(156, 139, 255, 0.32);
+    --shadow-color: rgba(0, 0, 0, 0.45);
+    --shadow-color-lg: rgba(0, 0, 0, 0.6);
   }
 }
 
 @theme inline {
   --color-board: var(--board);
   --color-plate: var(--plate);
+  --color-surface-2: var(--surface-2);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-rule: var(--rule);
   --color-gain: var(--gain);
   --color-cut: var(--cut);
   --color-gold: var(--gold);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
 
   --font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
   --font-sans: var(--font-plex-sans), system-ui, sans-serif;
@@ -40,6 +57,10 @@
 
 body {
   background: var(--board);
+  background-image:
+    radial-gradient(60rem 34rem at 85% -10%, var(--glow-accent), transparent 60%),
+    radial-gradient(50rem 30rem at 0% 0%, var(--glow-money), transparent 55%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
 }
@@ -49,6 +70,70 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+.gradient-text {
+  background: linear-gradient(100deg, var(--ink) 20%, var(--accent) 60%, var(--gain) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.money-text {
+  color: var(--gain);
+  text-shadow: 0 0 22px var(--glow-money);
+}
+
+.glass {
+  background: color-mix(in srgb, var(--plate) 88%, transparent);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--rule);
+}
+
+/* Gradient-ring wrapper for the top-3 podium rows: outer element paints the
+   ring, inner .glass plate sits 1.5px inside it so the ring reads as a
+   border rather than a glow smear. */
+.podium-ring {
+  background: linear-gradient(135deg, var(--gold), var(--accent) 55%, var(--gain));
+  padding: 1.5px;
+  border-radius: var(--radius-2xl, 1rem);
+}
+
+.podium-ring > * {
+  border-radius: calc(var(--radius-2xl, 1rem) - 1.5px);
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 32s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.4s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -56,5 +141,9 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .marquee-track {
+    animation: none;
   }
 }

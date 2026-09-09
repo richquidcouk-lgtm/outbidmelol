@@ -14,10 +14,10 @@ export function PillLink({
   return (
     <Link
       href={href}
-      className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 font-medium transition-colors ${
+      className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-medium transition-all ${
         active
-          ? "border-ink bg-ink text-white"
-          : "border-rule text-muted hover:border-ink hover:text-ink"
+          ? "bg-gradient-to-r from-accent to-gain text-white shadow-[0_2px_14px_var(--glow-accent)]"
+          : "glass text-muted hover:text-ink"
       }`}
     >
       {label} <span className="tnum text-xs opacity-70">{count}</span>

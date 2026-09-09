@@ -8,9 +8,9 @@ export const metadata = {
 
 export default function AboutPage() {
   return (
-    <article className="border-b border-rule bg-plate px-4 py-8">
-      <h1 className="font-display text-4xl font-black leading-[0.95]">
-        How it works
+    <article className="glass rise-in rounded-2xl px-5 py-8 sm:px-8">
+      <h1 className="font-display text-4xl font-black leading-[0.95] sm:text-5xl">
+        <span className="gradient-text">How it works</span>
       </h1>
 
       <div className="mt-6 max-w-prose space-y-6 text-sm leading-relaxed">
@@ -52,8 +52,8 @@ export default function AboutPage() {
           </h2>
           <p className="mt-2">
             Listings are keyed by their address, ignoring{" "}
-            <code>https://</code>, <code>www.</code>, trailing slashes, and
-            anything after a <code>?</code>. Submitting a link that is already
+            <code className="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">https://</code>, <code className="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">www.</code>, trailing slashes, and
+            anything after a <code className="rounded bg-surface-2 px-1 py-0.5 font-mono text-xs">?</code>. Submitting a link that is already
             on the board adds your money to that listing instead of creating a
             duplicate.
           </p>
@@ -83,7 +83,7 @@ export default function AboutPage() {
       <p className="mt-8">
         <Link
           href="/claim"
-          className="rounded-full bg-gain px-4 py-2 font-medium text-white"
+          className="rounded-full bg-gradient-to-r from-gain to-accent-2 px-5 py-2.5 font-semibold text-white shadow-[0_6px_22px_var(--glow-money)] transition-transform hover:scale-[1.03] active:scale-[0.98]"
         >
           Claim a spot
         </Link>

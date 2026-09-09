@@ -6,9 +6,11 @@ import { useState } from "react";
 import { getCategory, shortLabel } from "@/lib/categories";
 import { formatMoney } from "@/lib/money";
 import { relativeTime } from "@/lib/time";
+import { toHref } from "@/lib/url";
 import type { BoardListing, RangeFilter } from "@/lib/types";
 
 const NEW_WINDOW_MS = 24 * 60 * 60 * 1000;
+const RANK_MEDAL: Record<number, string> = { 1: "\u{1F947}", 2: "\u{1F948}", 3: "\u{1F949}" };
 
 export function ListingRow({
   listing,
@@ -45,24 +47,29 @@ export function ListingRow({
     }
   }
 
-  return (
-    <li
-      id={listing.id}
-      className={`border-b border-rule bg-plate ${
-        isTop ? "border-l-2 border-l-gold" : ""
+  const card = (
+    <div
+      className={`glass rounded-2xl transition-all duration-200 hover:-translate-y-0.5 ${
+        isTop
+          ? "hover:shadow-[0_16px_36px_var(--shadow-color-lg)]"
+          : "hover:shadow-[0_10px_24px_var(--shadow-color)]"
       }`}
     >
-      <div className="flex items-start gap-3 px-4 py-3">
+      <div className="flex items-start gap-3 px-4 py-3.5 sm:gap-4">
         <span
           className={`font-display tnum shrink-0 text-right font-black leading-none ${
-            isTop ? "w-10 text-4xl sm:text-5xl" : "w-10 text-2xl text-muted"
+            isTop
+              ? "gradient-text w-11 text-4xl sm:text-5xl"
+              : "w-8 text-xl text-muted"
           }`}
         >
-          {rank}
+          {isTop ? RANK_MEDAL[rank] : rank}
         </span>
 
         <div
-          className="relative shrink-0 overflow-hidden rounded-md border border-rule"
+          className={`relative shrink-0 overflow-hidden rounded-xl ring-1 ring-rule ${
+            isTop ? "shadow-[0_4px_16px_var(--shadow-color)]" : ""
+          }`}
           style={{ width: size, height: size }}
         >
           <Image
@@ -81,17 +88,21 @@ export function ListingRow({
               href={`/api/go/${listing.id}`}
               target="_blank"
               rel="noopener noreferrer nofollow"
-              className={`truncate font-semibold hover:underline ${
+              title={`Visit ${toHref(listing.url)}`}
+              className={`inline-flex items-center gap-1 truncate font-semibold hover:text-gain hover:underline ${
                 isTop ? "text-lg" : ""
               }`}
             >
               {listing.name}
+              <span aria-hidden className="text-muted">
+                ↗
+              </span>
             </a>
-            <span className="shrink-0 rounded-full bg-board px-1.5 py-0.5 text-[11px] font-medium text-muted ring-1 ring-inset ring-rule">
+            <span className="shrink-0 rounded-full bg-surface-2 px-1.5 py-0.5 text-[11px] font-medium text-muted ring-1 ring-inset ring-rule">
               {category.icon} {shortLabel(category)}
             </span>
             {isNew ? (
-              <span className="shrink-0 rounded-full bg-gold/20 px-1.5 py-0.5 text-[11px] font-medium text-gold ring-1 ring-inset ring-gold/40">
+              <span className="shrink-0 rounded-full bg-gold/15 px-1.5 py-0.5 text-[11px] font-medium text-gold ring-1 ring-inset ring-gold/40">
                 NEW
               </span>
             ) : isTrendingToday ? (
@@ -110,7 +121,14 @@ export function ListingRow({
           </p>
 
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-            <span className="truncate">{listing.url}</span>
+            <a
+              href={`/api/go/${listing.id}`}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="truncate hover:text-gain hover:underline"
+            >
+              {listing.url}
+            </a>
             <span>bumped {relativeTime(listing.lastBidAt, now)}</span>
             <button
               type="button"
@@ -129,9 +147,7 @@ export function ListingRow({
               <span className="tnum">
                 {listing.clickCount.toLocaleString()} clicks
               </span>
-              <span>
-                listed {relativeTime(listing.createdAt, now)}
-              </span>
+              <span>listed {relativeTime(listing.createdAt, now)}</span>
               <span className="tnum">
                 last bid {formatMoney(listing.lastBidAmountCents)}
               </span>
@@ -154,7 +170,7 @@ export function ListingRow({
 
         <div className="shrink-0 text-right">
           <div
-            className={`font-display tnum font-black leading-none text-gain ${
+            className={`font-display tnum money-text font-black leading-none ${
               isTop ? "text-2xl sm:text-3xl" : "text-xl"
             }`}
           >
@@ -167,6 +183,12 @@ export function ListingRow({
           ) : null}
         </div>
       </div>
+    </div>
+  );
+
+  return (
+    <li id={listing.id}>
+      {isTop ? <div className="podium-ring">{card}</div> : card}
     </li>
   );
 }

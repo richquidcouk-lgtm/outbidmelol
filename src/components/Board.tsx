@@ -12,7 +12,7 @@ export function Board({
 }) {
   if (listings.length === 0) {
     return (
-      <div className="border-b border-rule bg-plate px-4 py-16 text-center">
+      <div className="glass rounded-2xl px-4 py-16 text-center">
         <p className="font-display text-3xl font-black">
           {range === "today" ? "No bids yet today" : "The board is empty"}
         </p>
@@ -26,7 +26,7 @@ export function Board({
   }
 
   return (
-    <ol className="border-t border-rule">
+    <ol className="space-y-2.5">
       {listings.map((listing, i) => (
         <ListingRow
           key={listing.id}

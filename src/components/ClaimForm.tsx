@@ -12,16 +12,24 @@ const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function ClaimForm({
   lockedUrl,
+  prefillUrl,
+  prefillAmount,
   leaderTotalCents,
 }: {
+  /** URL already exists on the board — bump mode, url field hidden. */
   lockedUrl?: string;
+  /** URL doesn't exist yet — pre-populate the (still editable) url field. */
+  prefillUrl?: string;
+  prefillAmount?: number;
   leaderTotalCents: number | null;
 }) {
   const [name, setName] = useState("");
-  const [url, setUrl] = useState(lockedUrl ?? "");
+  const [url, setUrl] = useState(lockedUrl ?? prefillUrl ?? "");
   const [tagline, setTagline] = useState("");
   const [category, setCategory] = useState<CategorySlug | "">("");
-  const [amount, setAmount] = useState("5");
+  const [amount, setAmount] = useState(
+    prefillAmount ? String(prefillAmount) : "5",
+  );
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -95,7 +103,7 @@ export function ClaimForm({
   return (
     <form onSubmit={onSubmit} noValidate className="mt-6 space-y-5">
       {isBump ? (
-        <div className="rounded-md border border-rule bg-board px-3 py-2 text-sm">
+        <div className="rounded-xl bg-surface-2 px-3.5 py-3 text-sm">
           <p className="text-muted">Adding money to an existing listing</p>
           <p className="mt-0.5 font-semibold">{lockedUrl}</p>
           <p className="mt-1 text-xs text-muted">
@@ -140,7 +148,7 @@ export function ClaimForm({
 
           <Field label="Brand image" error={errors.image}>
             <div className="flex items-center gap-3">
-              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-rule bg-board">
+              <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-2">
                 {preview ? (
                   <Image
                     src={preview}
@@ -156,7 +164,7 @@ export function ClaimForm({
                 <button
                   type="button"
                   onClick={() => fileInput.current?.click()}
-                  className="rounded-full border border-ink px-3 py-1.5 text-sm font-medium"
+                  className="rounded-full bg-surface-2 px-3.5 py-1.5 text-sm font-semibold transition-colors hover:bg-rule"
                 >
                   {file ? "Change image" : "Choose image"}
                 </button>
@@ -194,13 +202,13 @@ export function ClaimForm({
       )}
 
       <Field label="Bid amount (USD)" error={errors.amount}>
-        <div className="flex items-center rounded-md border border-rule bg-plate">
-          <span className="px-3 text-muted">$</span>
+        <div className="flex items-center rounded-xl bg-surface-2 ring-1 ring-transparent transition-shadow focus-within:ring-accent">
+          <span className="pl-3.5 font-display text-lg font-bold text-muted">$</span>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
-            className="tnum w-full bg-transparent py-2 pr-3 outline-none"
+            className="tnum font-display w-full bg-transparent py-2.5 pr-3.5 pl-1.5 text-lg font-bold outline-none"
           />
         </div>
         {leaderTotalCents !== null ? (
@@ -219,7 +227,7 @@ export function ClaimForm({
       {formError ? (
         <p
           role="alert"
-          className="border-l-2 border-cut bg-plate px-3 py-2 text-sm text-cut"
+          className="rounded-xl bg-cut/10 px-3.5 py-2.5 text-sm text-cut ring-1 ring-inset ring-cut/25"
         >
           {formError}
         </p>
@@ -227,7 +235,7 @@ export function ClaimForm({
 
       <button
         type="submit"
-        className="w-full rounded-full bg-gain px-4 py-3 font-medium text-white sm:w-auto"
+        className="w-full rounded-full bg-gradient-to-r from-gain to-accent-2 px-6 py-3.5 font-display text-lg font-bold text-white shadow-[0_8px_28px_var(--glow-money)] transition-transform hover:scale-[1.02] active:scale-[0.98] sm:w-auto"
       >
         {isBump ? "Add to this listing" : "Continue to payment"}
       </button>
@@ -241,7 +249,7 @@ export function ClaimForm({
 }
 
 const inputClass =
-  "w-full rounded-md border border-rule bg-plate px-3 py-2 outline-none focus:border-ink";
+  "w-full rounded-xl bg-surface-2 px-3.5 py-2.5 outline-none ring-1 ring-transparent transition-shadow focus:ring-accent";
 
 function Field({
   label,

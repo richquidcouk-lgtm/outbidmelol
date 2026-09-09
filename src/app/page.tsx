@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { ActivityTicker } from "@/components/ActivityTicker";
 import { Board } from "@/components/Board";
 import { CategoryPills } from "@/components/CategoryPills";
+import { QuickClaimForm } from "@/components/QuickClaimForm";
 import { RangeToggle } from "@/components/RangeToggle";
 import { StatsStrip } from "@/components/StatsStrip";
 import { parseBoardQuery } from "@/lib/board-query";
-import { formatMoney } from "@/lib/money";
+import { MIN_BID_CENTS, formatMoney } from "@/lib/money";
 import {
   getSeedActivity,
   getSeedListings,
@@ -28,6 +28,7 @@ export default async function HomePage({
   const stats = getSeedStats(allListings, now);
   const activity = getSeedActivity(allListings);
   const leader = allListings[0];
+  const suggestedCents = leader ? leader.totalBidCents + 500 : MIN_BID_CENTS;
 
   const rangeListings = rankListings(allListings, query.range);
   const counts: Partial<Record<string, number>> = {};
@@ -38,45 +39,16 @@ export default async function HomePage({
     : rangeListings;
 
   return (
-    <>
+    <div className="space-y-4">
       <ActivityTicker events={activity} now={now} />
-      <StatsStrip stats={stats} />
 
-      <section className="border-b border-rule px-4 py-6">
-        <h1 className="font-display text-4xl font-black leading-[0.95] sm:text-5xl">
-          Rank is bought,
-          <br />
-          not earned.
-        </h1>
-        <p className="mt-3 max-w-prose text-sm text-muted">
-          Every position on this board is decided by one number: how much has
-          been paid for it. Pay more than the listing above you and you move
-          past it. Anyone can pay to move anyone up.
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Link
-            href="/claim"
-            className="rounded-full bg-gain px-4 py-2 font-medium text-white"
-          >
-            Claim a spot
-          </Link>
-          {leader ? (
-            <span className="text-sm text-muted">
-              Beat{" "}
-              <span className="tnum font-semibold text-ink">
-                {formatMoney(leader.totalBidCents)}
-              </span>{" "}
-              to take #1
-            </span>
-          ) : (
-            <span className="text-sm text-muted">
-              $5 minimum. The board is empty.
-            </span>
-          )}
-        </div>
-      </section>
+      <CategoryPills
+        query={query}
+        counts={counts}
+        total={rangeListings.length}
+      />
 
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rule bg-plate px-4 py-3">
+      <div className="flex flex-col items-center gap-1.5">
         <RangeToggle query={query} />
         <span className="text-xs text-muted">
           {query.range === "today"
@@ -85,13 +57,31 @@ export default async function HomePage({
         </span>
       </div>
 
-      <CategoryPills
-        query={query}
-        counts={counts}
-        total={rangeListings.length}
-      />
+      <section className="glass rise-in overflow-hidden rounded-2xl px-5 py-8 text-center sm:px-8 sm:py-10">
+        <h1 className="font-display text-4xl font-black leading-[0.95] tracking-tight sm:text-6xl">
+          {leader ? (
+            <>
+              Claim <span className="gradient-text">#1</span> for{" "}
+              <span className="money-text">{formatMoney(suggestedCents)}</span>
+            </>
+          ) : (
+            <span className="gradient-text">Claim #1 for $5</span>
+          )}
+        </h1>
+        <p className="mx-auto mt-3 max-w-prose text-[15px] leading-relaxed text-muted">
+          Rank is bought, not earned — the highest cumulative bid wins the top
+          spot. Pay more than the listing above you and you move past it.
+          Anyone can pay to move anyone up.
+        </p>
+
+        <div className="mx-auto max-w-2xl text-left">
+          <QuickClaimForm suggestedCents={suggestedCents} />
+        </div>
+      </section>
+
+      <StatsStrip stats={stats} />
 
       <Board listings={visibleListings} now={now} range={query.range} />
-    </>
+    </div>
   );
 }

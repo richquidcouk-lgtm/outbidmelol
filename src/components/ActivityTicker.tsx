@@ -11,19 +11,36 @@ export function ActivityTicker({
 }) {
   if (events.length === 0) return null;
 
+  const items = (key: string) => (
+    <ul className="flex w-max shrink-0 gap-6 pr-6">
+      {events.map((e, i) => (
+        <li
+          key={`${key}-${e.listingId}-${i}`}
+          className="flex shrink-0 items-center gap-1.5 text-xs"
+        >
+          <span
+            className="h-1.5 w-1.5 rounded-full bg-gain shadow-[0_0_8px_var(--glow-money)]"
+            aria-hidden
+          />
+          <span className="tnum money-text font-semibold">
+            {formatMoney(e.amountCents)}
+          </span>
+          <span className="text-muted opacity-80">on</span>
+          <span className="font-medium">{e.listingName}</span>
+          <span className="tnum text-muted opacity-60">
+            {relativeTime(e.at, now)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+
   return (
-    <div className="overflow-x-auto border-b border-rule bg-ink">
-      <ul className="flex w-max gap-6 px-4 py-2 text-xs text-white/90">
-        {events.map((e, i) => (
-          <li key={`${e.listingId}-${i}`} className="flex shrink-0 items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-gain" aria-hidden />
-            <span className="tnum font-semibold">{formatMoney(e.amountCents)}</span>
-            <span className="opacity-70">on</span>
-            <span className="font-medium">{e.listingName}</span>
-            <span className="tnum opacity-50">{relativeTime(e.at, now)}</span>
-          </li>
-        ))}
-      </ul>
+    <div className="glass overflow-hidden rounded-full px-4 py-2.5">
+      <div className="marquee-track flex w-max">
+        {items("a")}
+        {items("b")}
+      </div>
     </div>
   );
 }
