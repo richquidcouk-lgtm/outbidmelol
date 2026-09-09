@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { formatMoney } from "@/lib/money";
-import { getSeedListings, getSeedStats } from "@/lib/seed-data";
+import { getBoardStats, getLeaderListing } from "@/lib/queries";
 import { SITE_URL } from "@/lib/site";
 
 export const alt = "Outbid Me — the board where money is the only ranking";
@@ -11,14 +11,12 @@ export const contentType = "image/png";
 export const revalidate = 15;
 
 export default async function OpengraphImage() {
-  // Phase 1 fixture — swapped for a Prisma query in Phase 2.
-  const listings = getSeedListings();
-  const stats = getSeedStats(listings);
-  const leader = listings[0];
+  const [stats, leader] = await Promise.all([getBoardStats(), getLeaderListing()]);
 
-  // Real Phase 4 uploads are validated JPG/PNG/WebP and render fine here;
-  // the Phase 1 fixture uses inline SVG marks, which Satori's image loader
-  // can't reliably rasterize — fall back to an initials badge for those
+  // Vercel Blob uploads are validated JPG/PNG/WebP and render fine here;
+  // an inline SVG mark (shouldn't occur once Blob upload lands, but a
+  // defensive fallback costs nothing) can't be reliably rasterized by
+  // Satori's image loader, so fall back to an initials badge for those
   // rather than risk a broken image in the share preview.
   const leaderImageUrl =
     leader && !leader.imageUrl.endsWith(".svg")

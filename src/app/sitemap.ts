@@ -1,14 +1,9 @@
 import type { MetadataRoute } from "next";
-import { getSeedListings } from "@/lib/seed-data";
+import { getMostRecentBidAt } from "@/lib/queries";
 import { SITE_URL } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  // Phase 1 fixture — swapped for a Prisma query (MAX(lastBidAt)) in Phase 2.
-  const listings = getSeedListings();
-  const mostRecentBid = listings.reduce(
-    (latest, l) => (l.lastBidAt > latest ? l.lastBidAt : latest),
-    listings[0]?.lastBidAt ?? new Date(),
-  );
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const mostRecentBid = (await getMostRecentBidAt()) ?? new Date();
 
   return [
     {

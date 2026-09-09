@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Barlow_Condensed, IBM_Plex_Sans } from "next/font/google";
 import Link from "next/link";
+import { Suspense } from "react";
 import "./globals.css";
-import { formatMoney } from "@/lib/money";
-import { getSeedListings, getSeedStats } from "@/lib/seed-data";
+import { HeaderStatsPill } from "@/components/HeaderStatsPill";
 import { SITE_URL } from "@/lib/site";
 
 const barlowCondensed = Barlow_Condensed({
@@ -17,6 +17,13 @@ const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
+
+// The header's live stats pill (see HeaderStatsPill) needs a DB call on
+// every route via this shared layout. Forcing the whole tree dynamic means
+// nothing — including /about, /terms, etc. — tries to statically prerender
+// against the database at build time; they render per-request instead of
+// being cached as static HTML. Fine at current traffic.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Outbid Me — the board where money is the only ranking",
@@ -37,9 +44,6 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Phase 1 fixture — swapped for a shared cached Prisma query in Phase 2.
-  const stats = getSeedStats(getSeedListings());
-
   return (
     <html lang="en">
       <body
@@ -54,16 +58,9 @@ export default function RootLayout({
               <span className="gradient-text font-display text-xl font-black leading-none tracking-tight">
                 OUTBID ME
               </span>
-              <span className="hidden items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-muted md:flex">
-                <span
-                  className="h-1.5 w-1.5 rounded-full bg-gain shadow-[0_0_6px_var(--glow-money)]"
-                  aria-hidden
-                />
-                <span className="tnum font-semibold text-ink">
-                  {formatMoney(stats.totalRaisedCents)}
-                </span>
-                raised · {stats.listingCount} listings
-              </span>
+              <Suspense fallback={<span className="hidden h-6 w-40 rounded-full bg-surface-2 md:block" />}>
+                <HeaderStatsPill />
+              </Suspense>
             </Link>
             <nav className="flex items-center gap-4 text-sm">
               <Link

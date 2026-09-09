@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ClaimForm } from "@/components/ClaimForm";
-import { getSeedListings } from "@/lib/seed-data";
+import { getLeaderTotalCents, getListingByUrl } from "@/lib/queries";
 import { normalizeUrl } from "@/lib/url";
 
 const TITLE = "Claim a spot on Outbid Me — pay to rank #1";
@@ -26,16 +26,14 @@ export default async function ClaimPage({
   const { url, amount } = await searchParams;
   const normalized = url ? normalizeUrl(url) : null;
 
-  // Phase 1 fixture — swapped for a Prisma query in Phase 2.
-  const listings = getSeedListings();
-  const leaderTotalCents = listings[0]?.totalBidCents ?? null;
+  const [leaderTotalCents, existing] = await Promise.all([
+    getLeaderTotalCents(),
+    normalized ? getListingByUrl(normalized) : Promise.resolve(null),
+  ]);
 
   // An existing URL bumps that listing (name/tagline/image locked to the
   // original creator); a new URL just pre-fills the field so it stays
   // editable — same URL param, two different meanings.
-  const existing = normalized
-    ? listings.find((l) => l.url === normalized)
-    : undefined;
   const lockedUrl = existing?.url;
   const prefillUrl = normalized && !existing ? normalized : undefined;
   const prefillAmount = amount ? Number(amount) : undefined;

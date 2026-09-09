@@ -8,15 +8,16 @@ import { StatsStrip } from "@/components/StatsStrip";
 import { parseBoardQuery } from "@/lib/board-query";
 import { MIN_BID_CENTS, formatMoney } from "@/lib/money";
 import {
-  getSeedActivity,
-  getSeedListings,
-  getSeedStats,
+  getBoardListings,
+  getBoardStats,
+  getRecentActivity,
   rankListings,
-} from "@/lib/seed-data";
+} from "@/lib/queries";
 import { SITE_URL } from "@/lib/site";
 import { toHref } from "@/lib/url";
 
-export const revalidate = 15;
+// Root layout is force-dynamic (see layout.tsx) — this route inherits that
+// and always renders per-request, so there's no separate revalidate here.
 
 const TITLE = "Outbid Me — the board where money is the only ranking";
 const DESCRIPTION =
@@ -50,10 +51,11 @@ export default async function HomePage({
   const query = parseBoardQuery(await searchParams);
   const now = new Date();
 
-  // Phase 1 fixture — swapped for a Prisma query in Phase 2.
-  const allListings = getSeedListings(now);
-  const stats = getSeedStats(allListings, now);
-  const activity = getSeedActivity(allListings);
+  const [allListings, stats, activity] = await Promise.all([
+    getBoardListings(now),
+    getBoardStats(now),
+    getRecentActivity(),
+  ]);
   const leader = allListings[0];
   const suggestedCents = leader ? leader.totalBidCents + 500 : MIN_BID_CENTS;
 
