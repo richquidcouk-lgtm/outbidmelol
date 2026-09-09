@@ -4,6 +4,7 @@ import Link from "next/link";
 import "./globals.css";
 import { formatMoney } from "@/lib/money";
 import { getSeedListings, getSeedStats } from "@/lib/seed-data";
+import { SITE_URL } from "@/lib/site";
 
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow-condensed",
@@ -21,9 +22,11 @@ export const metadata: Metadata = {
   title: "Outbid Me — the board where money is the only ranking",
   description:
     "A public leaderboard ranked purely by how much has been paid. No votes, no algorithm. Pay more, rank higher.",
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://outbid-me.lol",
-  ),
+  metadataBase: new URL(SITE_URL),
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

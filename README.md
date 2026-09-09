@@ -34,11 +34,26 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 BLOB_READ_WRITE_TOKEN=
-NEXT_PUBLIC_SITE_URL=https://outbid-me.lol
+NEXT_PUBLIC_SITE_URL=https://www.outbid-me.lol
 ```
 
-`NEXT_PUBLIC_SITE_URL` is already read (for page metadata); the rest are placeholders for the
-Prisma/Stripe/Blob phases.
+`NEXT_PUBLIC_SITE_URL` is already read (for canonical URLs, OG/Twitter metadata, and the
+sitemap/robots.txt — see `src/lib/site.ts`) and defaults to the `www` host the site is actually
+deployed at if unset. **Set it explicitly in the Vercel project's env vars** so it matches
+whichever of `outbid-me.lol` / `www.outbid-me.lol` is configured as the primary domain — a
+mismatch there would make canonical tags point at a host that 301s away from itself. The rest are
+placeholders for the Prisma/Stripe/Blob phases.
+
+## SEO
+
+Per-route metadata (title/description/canonical), Open Graph + Twitter Card images
+(`app/opengraph-image.tsx` is dynamic — live stats + current #1 — on the same 15s revalidate
+window as the board; `/about` and `/claim` get simple static ones), `robots.ts`/`sitemap.ts`,
+JSON-LD (`WebSite` + `ItemList` on `/`), and real favicon/app icons are all in place. Filtered
+board views (`?category=`, `?range=`) and `/claim`'s prefill params (`?url=`, `?amount=`) all
+canonicalize back to their bare route rather than getting indexed as separate pages. `/success`
+isn't built yet (Stripe phase), so it has no page-level `noindex` yet, but `/success` is already
+disallowed in `robots.ts` ahead of that.
 
 ## How ranking works
 

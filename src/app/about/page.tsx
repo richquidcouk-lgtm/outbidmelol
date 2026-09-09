@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata = {
-  title: "How it works — Outbid Me",
-  description:
-    "Outbid Me ranks listings purely by cumulative amount paid. No votes, no algorithm, no editorial curation.",
+const TITLE = "How it works — Outbid Me";
+const DESCRIPTION =
+  "Outbid Me ranks listings purely by cumulative amount paid. No votes, no algorithm, no editorial curation.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/about" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "/about" },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default function AboutPage() {

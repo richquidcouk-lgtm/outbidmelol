@@ -1,10 +1,21 @@
+import type { Metadata } from "next";
 import { ClaimForm } from "@/components/ClaimForm";
 import { getSeedListings } from "@/lib/seed-data";
 import { normalizeUrl } from "@/lib/url";
 
-export const metadata = {
-  title: "Claim a spot — Outbid Me",
-  description: "Pay to put your listing on the board. $5 minimum.",
+const TITLE = "Claim a spot on Outbid Me — pay to rank #1";
+const DESCRIPTION =
+  "Submit your link and a bid to take a spot on Outbid Me's leaderboard. $5 minimum — pay more than the listing above you to move past it.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  // ?url=/?amount= only pre-fill the form (see ClaimPage below) — they don't
+  // change the page's content in any way worth indexing separately, so every
+  // variant canonicalizes to the bare form.
+  alternates: { canonical: "/claim" },
+  openGraph: { title: TITLE, description: DESCRIPTION, url: "/claim" },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default async function ClaimPage({

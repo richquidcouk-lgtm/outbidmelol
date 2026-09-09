@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ActivityTicker } from "@/components/ActivityTicker";
 import { Board } from "@/components/Board";
 import { CategoryPills } from "@/components/CategoryPills";
@@ -12,8 +13,34 @@ import {
   getSeedStats,
   rankListings,
 } from "@/lib/seed-data";
+import { SITE_URL } from "@/lib/site";
+import { toHref } from "@/lib/url";
 
 export const revalidate = 15;
+
+const TITLE = "Outbid Me — the board where money is the only ranking";
+const DESCRIPTION =
+  "A public leaderboard ranked purely by how much has been paid. No votes, no algorithm. Pay more, rank higher.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  // Category/range are view filters on the same content, not distinct pages —
+  // this canonical is static (not read from searchParams) so every
+  // ?category=/?range= combination points back at the one indexable URL.
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+};
 
 export default async function HomePage({
   searchParams,
@@ -38,8 +65,42 @@ export default async function HomePage({
     ? rangeListings.filter((l) => l.category === query.category)
     : rangeListings;
 
+  // Reflects the canonical (unfiltered, all-time) board regardless of which
+  // filtered view is currently rendered — the canonical URL always points at
+  // this ranking, so the structured data should describe that, not whatever
+  // ?category=/?range= slice a crawler happened to request.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        name: "Outbid Me",
+        url: SITE_URL,
+        description: DESCRIPTION,
+      },
+      {
+        "@type": "ItemList",
+        name: "Outbid Me leaderboard",
+        description: "Listings ranked by cumulative amount paid, highest first.",
+        itemListOrder: "https://schema.org/ItemListOrderDescending",
+        numberOfItems: allListings.length,
+        itemListElement: allListings.map((l, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: l.name,
+          url: toHref(l.url),
+        })),
+      },
+    ],
+  };
+
   return (
     <div className="space-y-4">
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger -- documented Next.js pattern for JSON-LD; JSON.stringify avoids the HTML-entity escaping a text child would apply
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ActivityTicker events={activity} now={now} />
 
       <CategoryPills
