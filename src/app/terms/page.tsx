@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { COMPANY, POLICY_LAST_UPDATED } from "@/lib/company";
+import { COMPANY, POLICY_LAST_UPDATED, isPlaceholder } from "@/lib/company";
 
 const TITLE = "Terms — Outbid Me";
 const DESCRIPTION =
@@ -138,8 +138,11 @@ export default function TermsPage() {
             Company details
           </h2>
           <p className="mt-2">
-            Outbid Me is operated by {COMPANY.legalName}, company number{" "}
-            {COMPANY.number}. Full contact and registration details:{" "}
+            Outbid Me is operated by {COMPANY.legalName}
+            {!isPlaceholder(COMPANY.number)
+              ? `, company number ${COMPANY.number}`
+              : ""}
+            . Full contact and registration details:{" "}
             <Link
               href="/contact"
               className="text-gain underline underline-offset-2 hover:text-ink"

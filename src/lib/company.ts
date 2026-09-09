@@ -1,14 +1,19 @@
 /**
  * Trader identification + contact details, referenced from /contact,
- * /terms, and /privacy. Placeholder values below — replace with the real
- * registration details before this goes live publicly (Stripe requires
- * accurate trader ID to process payments).
+ * /terms, and /privacy. number/address are still placeholders — replace
+ * before this goes live publicly (Stripe requires accurate trader ID to
+ * process payments).
  */
 export const COMPANY = {
-  legalName: "[COMPANY LEGAL NAME]",
+  legalName: "TechNera Ltd",
   number: "[COMPANY NUMBER]",
-  address: "[REGISTERED OFFICE ADDRESS]",
-  email: "[EMAIL ADDRESS]",
+  address: "London, UK",
+  email: "official@techneraltd.com",
 };
 
 export const POLICY_LAST_UPDATED = "September 2026";
+
+/** True while a field still holds its unfilled "[...]" placeholder text. */
+export function isPlaceholder(value: string): boolean {
+  return /^\[.*\]$/.test(value);
+}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { COMPANY } from "@/lib/company";
+import { COMPANY, isPlaceholder } from "@/lib/company";
 
 const TITLE = "Contact — Outbid Me";
 const DESCRIPTION =
@@ -45,8 +45,12 @@ export default function ContactPage() {
           <h2 className="font-display text-2xl font-black">Who we are</h2>
           <ul className="mt-2 space-y-1">
             <li>Legal name: {COMPANY.legalName}</li>
-            <li>Company number: {COMPANY.number}</li>
-            <li>Registered office: {COMPANY.address}</li>
+            {!isPlaceholder(COMPANY.number) ? (
+              <li>Company number: {COMPANY.number}</li>
+            ) : null}
+            {!isPlaceholder(COMPANY.address) ? (
+              <li>Registered office: {COMPANY.address}</li>
+            ) : null}
           </ul>
           <p className="mt-2 text-xs text-muted">
             This is the trader identification required under UK e-commerce
