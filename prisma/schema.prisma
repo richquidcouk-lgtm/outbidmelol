@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// A Listing only exists once its first bid has actually been paid — there
+// is deliberately no "unpublished" state, so the board never has to filter
+// out spam/abandoned submissions that never completed checkout.
+model Listing {
+  id            String   @id @default(cuid())
+  name          String
+  /// Normalized: lowercase host + path, no protocol/www/trailing slash/query/hash.
+  url           String   @unique
+  tagline       String
+  imageUrl      String
+  /// One of the slugs in src/lib/categories.ts — kept as a plain string
+  /// rather than a Prisma enum so the category list can grow without a
+  /// migration every time.
+  category      String
+  totalBidCents Int      @default(0)
+  clickCount    Int      @default(0)
+  createdAt     DateTime @default(now())
+  lastBidAt     DateTime @default(now())
+  bids          Bid[]
+
+  @@index([totalBidCents])
+}
+
+enum BidStatus {
+  pending
+  paid
+}
+
+// Created the moment someone submits the claim form (before payment), so a
+// Stripe Payment Link's client_reference_id has something to point at.
+// amountCents starts as the amount suggested on our own form and is
+// OVERWRITTEN with Stripe's real amount_total once the webhook confirms —
+// the buyer can type any amount on Stripe's hosted page, so our number is
+// only ever a suggestion until payment actually lands.
+model Bid {
+  id        String    @id @default(cuid())
+  listingId String?
+  listing   Listing?  @relation(fields: [listingId], references: [id])
+
+  amountCents     Int
+  status          BidStatus @default(pending)
+  /// Set once the webhook processes this bid; unique so a retried webhook
+  /// delivery can't double-apply the same payment.
+  stripeSessionId String?   @unique
+
+  // Only populated for a brand-new listing (listingId is null until the
+  // webhook creates it). Bump-mode bids leave these null and use listingId
+  // instead, since the listing they're adding money to already exists.
+  pendingName     String?
+  pendingUrl      String?
+  pendingTagline  String?
+  pendingImageUrl String?
+  pendingCategory String?
+
+  createdAt DateTime  @default(now())
+  paidAt    DateTime?
+
+  @@index([listingId])
+  @@index([status])
+}

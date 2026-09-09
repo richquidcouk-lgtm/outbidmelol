@@ -5,14 +5,24 @@ the listing above you and you move past it. Every listing carries a brand image,
 
 ## Status
 
-This is the frontend build (Phase 1). The board, filters, and claim form run against fixture
-data in `src/lib/seed-data.ts`. Nothing is wired to a real database or payment provider yet:
+The board, filters, and claim form still run against fixture data in `src/lib/seed-data.ts` —
+none of the app's own pages read from the database yet. What exists so far toward real payments:
 
-- **Not yet built**: Prisma schema/migration, Stripe Checkout, the webhook that confirms a
-  paid bid, and Vercel Blob image upload. `/claim` validates input client-side but its submit
-  handler stops short of checkout.
+- **`prisma/schema.prisma` + an offline-generated migration** (`prisma/migrations/`) — `Listing`
+  and `Bid` models, matching the shapes `seed-data.ts` already produces. Not yet applied to a
+  real database (no `DATABASE_URL` set up yet) and no application code queries it yet.
+- **Payment model: a single Stripe Payment Link with a customer-chosen amount**, not a
+  dynamically-created Checkout Session. That means: (a) the $5 floor must be configured on the
+  Payment Link itself in the Stripe dashboard — our own client-side validation can't enforce it
+  on Stripe's hosted page — and (b) our UI can only *suggest* an amount, never guarantee what the
+  buyer actually pays, since that's typed in on Stripe's page. A pending `Bid` row is created
+  first so the Payment Link's `client_reference_id` param has something to point back to; the
+  webhook fills in the real `amount_total` once payment confirms.
+- **Not yet built**: the `/api/checkout` redirect route, the webhook that confirms a paid bid,
+  `/success`, and Vercel Blob image upload. `/claim` validates input client-side but its submit
+  handler still stops short of checkout.
 - `/api/go/[id]` redirects to the listing's URL (proves the click-through mechanism) but does
-  not yet persist a click count — there's no database to persist it into.
+  not yet persist a click count — there's no live database to persist it into.
 
 Once those land, the env vars below become required for local development and for the Vercel
 deployment.
@@ -30,12 +40,21 @@ Open http://localhost:3000.
 
 ```
 DATABASE_URL=
+STRIPE_PAYMENT_LINK_URL=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 BLOB_READ_WRITE_TOKEN=
 NEXT_PUBLIC_SITE_URL=https://www.outbid-me.lol
 ```
+
+`DATABASE_URL`: create one from the Vercel project's **Storage** tab → **Create Database** →
+**Postgres** — it's added to Vercel's env vars automatically. `STRIPE_PAYMENT_LINK_URL` is the
+"customer chooses price" Payment Link buyers get redirected to. `STRIPE_SECRET_KEY` is only
+needed if the app calls the Stripe API directly (it currently doesn't — checkout is a redirect to
+a pre-made link, not an API call); `STRIPE_WEBHOOK_SECRET` is required to verify
+`checkout.session.completed` events. There's no `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — that's for
+Stripe.js/Elements, which this flow doesn't use since checkout happens entirely on Stripe's own
+hosted page.
 
 `NEXT_PUBLIC_SITE_URL` is already read (for canonical URLs, OG/Twitter metadata, and the
 sitemap/robots.txt — see `src/lib/site.ts`) and defaults to the `www` host the site is actually
