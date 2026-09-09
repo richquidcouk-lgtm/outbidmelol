@@ -5,20 +5,27 @@ import { PrismaClient } from "@prisma/client";
 // a route module would open a fresh connection pool.
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-// Direct connection (POSTGRES_URL_NON_POOLING), not the pooled
-// POSTGRES_PRISMA_URL: @prisma/adapter-pg uses node-postgres's extended
-// query protocol (real prepared statements), which breaks intermittently
-// against PgBouncer in transaction-pooling mode. Fine at today's traffic;
-// revisit (Supabase's session-mode pooler, or Prisma Accelerate) before
-// this sees enough concurrent load to approach Postgres's connection limit.
-// node-postgres's own TLS validation rejects Supabase's certificate chain
-// as self-signed under Node's default strict checking, even though the
-// connection is still encrypted — a known, common friction point connecting
-// `pg` (rather than Prisma's own engine, which handles it fine — that's why
-// `prisma migrate deploy` above didn't need this) to Supabase specifically.
+/**
+ * pg-connection-string's newer versions alias sslmode=require (what
+ * Supabase's connection string specifies) to strict verify-full unless
+ * uselibpqcompat=true is also present — without it, Supabase's certificate
+ * chain gets rejected as self-signed even though the connection is
+ * genuinely encrypted. This has to go in the connection string itself: pg's
+ * ConnectionParameters does `Object.assign({}, config, parse(connectionString))`,
+ * so anything parsed from the string (including its own derived `ssl`)
+ * overwrites a same-named option passed alongside `connectionString` —
+ * an `ssl: {...}` option next to `connectionString` is silently discarded.
+ */
+function withLibpqCompat(connectionString: string | undefined): string | undefined {
+  if (!connectionString) return connectionString;
+  const url = new URL(connectionString);
+  url.searchParams.set("uselibpqcompat", "true");
+  url.searchParams.set("sslmode", "require");
+  return url.toString();
+}
+
 const adapter = new PrismaPg({
-  connectionString: process.env.POSTGRES_URL_NON_POOLING,
-  ssl: { rejectUnauthorized: false },
+  connectionString: withLibpqCompat(process.env.POSTGRES_URL_NON_POOLING),
 });
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
