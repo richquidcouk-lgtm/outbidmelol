@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/about", "/claim"],
+      allow: ["/", "/about", "/claim", "/contact", "/terms", "/privacy", "/refunds"],
       // /success doesn't exist yet (Stripe checkout — a later phase); listed
       // now so the rule is already in place once that route lands.
       disallow: ["/api/", "/success"],

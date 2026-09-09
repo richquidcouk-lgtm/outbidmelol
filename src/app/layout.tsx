@@ -85,11 +85,23 @@ export default function RootLayout({
               Ranking is cumulative amount paid, highest first. Nothing else
               affects position.
             </p>
-            <p className="mt-2">
-              <Link href="/about" className="underline hover:text-ink">
+            <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+              <Link href="/about" className="hover:text-ink hover:underline">
                 How it works
               </Link>
-            </p>
+              <Link href="/contact" className="hover:text-ink hover:underline">
+                Contact
+              </Link>
+              <Link href="/terms" className="hover:text-ink hover:underline">
+                Terms
+              </Link>
+              <Link href="/privacy" className="hover:text-ink hover:underline">
+                Privacy
+              </Link>
+              <Link href="/refunds" className="hover:text-ink hover:underline">
+                Refunds
+              </Link>
+            </nav>
           </footer>
         </div>
       </body>

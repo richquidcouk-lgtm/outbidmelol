@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { CATEGORIES, type CategorySlug } from "@/lib/categories";
 import { MIN_BID_CENTS, formatMoney, parseDollarsToCents } from "@/lib/money";
@@ -32,6 +33,7 @@ export function ClaimForm({
   );
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [agreedNoRefund, setAgreedNoRefund] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -82,6 +84,8 @@ export function ClaimForm({
     if (cents === null) next.amount = "Enter an amount like 25 or 25.50.";
     else if (cents < MIN_BID_CENTS)
       next.amount = `Minimum bid is ${formatMoney(MIN_BID_CENTS)}.`;
+    if (!agreedNoRefund)
+      next.agreedNoRefund = "You need to accept this before paying.";
     return next;
   }
 
@@ -224,6 +228,35 @@ export function ClaimForm({
         )}
       </Field>
 
+      <div>
+        <label className="flex items-start gap-2.5 text-xs text-muted">
+          <input
+            type="checkbox"
+            checked={agreedNoRefund}
+            onChange={(e) => setAgreedNoRefund(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-gain"
+          />
+          <span>
+            I understand{" "}
+            {isBump ? "this bid will be added" : "my listing will be displayed"}{" "}
+            immediately once payment completes, and that I lose any right to
+            cancel or receive a refund from that point.{" "}
+            <Link
+              href="/refunds"
+              className="text-gain underline underline-offset-2 hover:text-ink"
+            >
+              Refund policy
+            </Link>
+            .
+          </span>
+        </label>
+        {errors.agreedNoRefund ? (
+          <p className="mt-1 pl-6 text-xs text-cut">
+            {errors.agreedNoRefund}
+          </p>
+        ) : null}
+      </div>
+
       {formError ? (
         <p
           role="alert"
@@ -239,11 +272,6 @@ export function ClaimForm({
       >
         {isBump ? "Add to this listing" : "Continue to payment"}
       </button>
-
-      <p className="text-xs text-muted">
-        Bids are final and non-refundable. You are paying for a position, for
-        as long as nobody pays more.
-      </p>
     </form>
   );
 }
