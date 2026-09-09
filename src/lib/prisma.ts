@@ -24,8 +24,17 @@ function withLibpqCompat(connectionString: string | undefined): string | undefin
   return url.toString();
 }
 
+// POSTGRES_PRISMA_URL (Supavisor transaction-mode pooler), not
+// POSTGRES_URL_NON_POOLING: every serverless cold start opens its own fresh
+// pg.Pool, and the direct/session-mode connection caps out at 15 total
+// clients — this broke the live site under a single person's normal use,
+// not just under real concurrent load. The pooler is built for exactly
+// this many-short-lived-connections pattern. @prisma/adapter-pg doesn't
+// cache/reuse prepared statement names unless a statementNameGenerator is
+// explicitly provided (see PrismaPgOptions), which avoids the classic
+// prepared-statement-vs-transaction-pooling failure mode.
 const adapter = new PrismaPg({
-  connectionString: withLibpqCompat(process.env.POSTGRES_URL_NON_POOLING),
+  connectionString: withLibpqCompat(process.env.POSTGRES_PRISMA_URL),
 });
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
