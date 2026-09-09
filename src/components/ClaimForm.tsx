@@ -1,5 +1,6 @@
 "use client";
 
+import { upload } from "@vercel/blob/client";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -37,6 +38,7 @@ export function ClaimForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const isBump = Boolean(lockedUrl);
@@ -97,23 +99,28 @@ export function ClaimForm({
     setErrors(found);
     if (Object.values(found).some(Boolean)) return;
 
-    if (!isBump) {
-      // New listings need a hosted image URL, which needs Vercel Blob —
-      // not wired up yet. Bumping an existing listing needs no image, so
-      // that path goes to real checkout below.
-      setFormError(
-        "New listings aren't open yet — image upload is still being wired up. You can bump an existing listing in the meantime.",
-      );
-      return;
-    }
-
     setSubmitting(true);
     try {
       const cents = parseDollarsToCents(amount)!;
+      const payload: Record<string, unknown> = { url, amountCents: cents };
+
+      if (!isBump) {
+        setUploading(true);
+        const blob = await upload(`listings/${file!.name}`, file!, {
+          access: "public",
+          handleUploadUrl: "/api/upload",
+        });
+        setUploading(false);
+        payload.name = name;
+        payload.tagline = tagline;
+        payload.category = category;
+        payload.imageUrl = blob.url;
+      }
+
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, amountCents: cents }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok || !data.redirectUrl) {
@@ -125,6 +132,7 @@ export function ClaimForm({
     } catch {
       setFormError("Couldn't reach the server. Check your connection and try again.");
       setSubmitting(false);
+      setUploading(false);
     }
   }
 
@@ -299,11 +307,13 @@ export function ClaimForm({
         disabled={submitting}
         className="w-full rounded-full bg-gradient-to-r from-gain to-accent-2 px-6 py-3.5 font-display text-lg font-bold text-white shadow-[0_8px_28px_var(--glow-money)] transition-transform hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100 sm:w-auto"
       >
-        {submitting
-          ? "Redirecting to payment…"
-          : isBump
-            ? "Add to this listing"
-            : "Continue to payment"}
+        {uploading
+          ? "Uploading image…"
+          : submitting
+            ? "Redirecting to payment…"
+            : isBump
+              ? "Add to this listing"
+              : "Continue to payment"}
       </button>
     </form>
   );
