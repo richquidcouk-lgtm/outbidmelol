@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --board: #e9ecef;
+  --plate: #ffffff;
+  --ink: #12161c;
+  --muted: #5a626c;
+  --rule: #c9cfd6;
+  --gain: #0b7a3b;
+  --cut: #d93a1e;
+  --gold: #e8b417;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --board: #0e1116;
+    --plate: #171b22;
+    --ink: #e9ecef;
+    --muted: #98a1ac;
+    --rule: #2b323b;
+    --gain: #35b06a;
+    --cut: #f2603f;
+    --gold: #f0c43a;
+  }
+}
+
+@theme inline {
+  --color-board: var(--board);
+  --color-plate: var(--plate);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-gain: var(--gain);
+  --color-cut: var(--cut);
+  --color-gold: var(--gold);
+
+  --font-display: var(--font-barlow-condensed), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-plex-sans), system-ui, sans-serif;
+}
+
+body {
+  background: var(--board);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* Money and rank numerals must not jitter when the board revalidates. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
